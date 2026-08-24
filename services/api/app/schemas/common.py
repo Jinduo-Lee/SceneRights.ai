@@ -20,3 +20,4 @@ class Project(BaseModel):
     name: str
     status: str = "active"
     created_at: datetime
+

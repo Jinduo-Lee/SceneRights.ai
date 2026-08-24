@@ -113,3 +113,4 @@ def validate_review_status_transition(
     """Validates state transitions for review_status in the decisions log."""
     allowed = VALID_STATUS_TRANSITIONS.get(current, set())
     return new_status in allowed
+

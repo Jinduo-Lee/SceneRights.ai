@@ -14,3 +14,4 @@ class AnalysisRun(BaseModel):
     started_at: datetime
     completed_at: Optional[datetime] = None
     findings_count: Optional[int] = None
+

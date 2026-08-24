@@ -19,3 +19,4 @@ class Scene(BaseModel):
     name: str
     reference_clip_id: Optional[str] = None
     created_at: datetime
+

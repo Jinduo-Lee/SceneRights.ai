@@ -31,3 +31,4 @@ class PolicyRule(BaseModel):
     version: int = 1
     effective_date: Optional[datetime] = None
     created_at: datetime
+

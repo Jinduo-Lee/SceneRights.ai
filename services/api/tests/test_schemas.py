@@ -228,3 +228,4 @@ def test_agent_query_dtos():
     )
     assert req.scene_id == "scene_12"
     assert resp.tool_calls[0].row_count == 2
+

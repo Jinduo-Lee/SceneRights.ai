@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.seed import router as seed_router
 
 app = FastAPI(
     title="SceneRights AI API",
@@ -15,9 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(seed_router)
+
 
 @app.get("/healthz")
 async def healthz():
     """Liveness probe endpoint."""
     return {"status": "ok", "version": "6.2.2"}
-

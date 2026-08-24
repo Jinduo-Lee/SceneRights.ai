@@ -19,3 +19,4 @@ class AgentQueryRequest(BaseModel):
 class AgentQueryResponse(BaseModel):
     answer: str
     tool_calls: list[ToolCallSummary]
+

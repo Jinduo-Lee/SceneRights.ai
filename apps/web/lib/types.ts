@@ -167,3 +167,4 @@ export interface ErrorDetail {
 export interface ErrorEnvelope {
   error: ErrorDetail;
 }
+
