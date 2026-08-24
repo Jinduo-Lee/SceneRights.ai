@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytest
 from app.config import settings
 from app.db.clickhouse import get_clickhouse_client, apply_migrations
@@ -51,14 +51,7 @@ def test_append_only_finding_and_decision_lifecycle():
     project_id = settings.DEMO_PROJECT_ID
     scene_id = "scene_12"
     finding_id = "test_find_101"
-    
-    t0 = datetime.now()
-    t1 = t0 + timedelta(seconds=1)
-    t2 = t0 + timedelta(seconds=2)
-
-    t0_str = t0.strftime("%Y-%m-%d %H:%M:%S")
-    t1_str = t1.strftime("%Y-%m-%d %H:%M:%S")
-    t2_str = t2.strftime("%Y-%m-%d %H:%M:%S")
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Clean previous test row if exists
     client.command(f"ALTER TABLE findings DELETE WHERE finding_id = '{finding_id}'")
@@ -72,10 +65,10 @@ def test_append_only_finding_and_decision_lifecycle():
         f"VALUES ('{project_id}', '{scene_id}', '{finding_id}', 'run_001', 'continuity', "
         f"'necklace', 'lead actor silver necklace', 'take_a', 'take_b', 'absent', 'clear', "
         f"'high', 'rule_001', 1, 'northstar_scene12_policy.txt', 'Lead actor wears silver necklace', "
-        f"'Lead actor wears silver necklace', 5000, '{t0_str}')"
+        f"'Lead actor wears silver necklace', 5000, '{now_str}')"
     )
 
-    # Verify findings_current initially shows review_status = 'open' via coalesce/if
+    # Verify findings_current initially shows review_status = 'open' via coalesce
     curr_initial = client.query(
         f"SELECT review_status FROM findings_current WHERE project_id = '{project_id}' AND finding_id = '{finding_id}'"
     ).result_rows
@@ -85,7 +78,7 @@ def test_append_only_finding_and_decision_lifecycle():
     # Step 7: INSERT a decision for that finding
     client.command(
         f"INSERT INTO decisions (project_id, finding_id, review_status, previous_status, reviewer, comment, created_at) "
-        f"VALUES ('{project_id}', '{finding_id}', 'confirmed', 'open', 'reviewer_alice', 'Confirmed necklace is missing', '{t1_str}')"
+        f"VALUES ('{project_id}', '{finding_id}', 'confirmed', 'open', 'reviewer_alice', 'Confirmed necklace is missing', '{now_str}')"
     )
 
     # Step 8: Query findings_current and verify latest review_status is reflected
@@ -96,10 +89,10 @@ def test_append_only_finding_and_decision_lifecycle():
     assert curr_after[0][0] == "confirmed"
     assert curr_after[0][1] == "reviewer_alice"
 
-    # Insert second decision resolving finding with later timestamp t2
+    # Insert second decision resolving finding
     client.command(
         f"INSERT INTO decisions (project_id, finding_id, review_status, previous_status, reviewer, comment, created_at) "
-        f"VALUES ('{project_id}', '{finding_id}', 'resolved', 'confirmed', 'reviewer_bob', 'Reshoot approved', '{t2_str}')"
+        f"VALUES ('{project_id}', '{finding_id}', 'resolved', 'confirmed', 'reviewer_bob', 'Reshoot approved', '{now_str}')"
     )
 
     curr_resolved = client.query(
@@ -109,7 +102,7 @@ def test_append_only_finding_and_decision_lifecycle():
     assert curr_resolved[0][0] == "resolved"
     assert curr_resolved[0][1] == "reviewer_bob"
 
-    # Step 9: Verify original finding in findings table remains unchanged (append-only proof)
+    # Step 9: Verify original finding in findings table remains unchanged
     orig = client.query(
         f"SELECT ai_assessment, severity FROM findings WHERE finding_id = '{finding_id}'"
     ).result_rows
@@ -126,3 +119,4 @@ def test_append_only_finding_and_decision_lifecycle():
     # Cleanup test row
     client.command(f"ALTER TABLE findings DELETE WHERE finding_id = '{finding_id}'")
     client.command(f"ALTER TABLE decisions DELETE WHERE finding_id = '{finding_id}'")
+
