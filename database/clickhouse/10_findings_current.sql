@@ -1,4 +1,4 @@
-CREATE VIEW IF NOT EXISTS findings_current AS
+CREATE OR REPLACE VIEW findings_current AS
 SELECT
     f.project_id,
     f.scene_id,
@@ -11,9 +11,9 @@ SELECT
     f.policy_rule_id,
     f.policy_rule,
     f.source_quote,
-    coalesce(d.review_status, 'open') AS review_status,
+    if(empty(d.review_status), 'open', d.review_status) AS review_status,
     d.reviewer AS last_reviewer,
-    d.created_at AS decided_at
+    d.max_created_at AS decided_at
 FROM findings AS f
 LEFT JOIN
 (
@@ -22,10 +22,9 @@ LEFT JOIN
         finding_id,
         argMax(review_status, created_at) AS review_status,
         argMax(reviewer, created_at) AS reviewer,
-        max(created_at) AS created_at
+        max(created_at) AS max_created_at
     FROM decisions
     GROUP BY project_id, finding_id
 ) AS d
     ON f.project_id = d.project_id
    AND f.finding_id = d.finding_id;
-
