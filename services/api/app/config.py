@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     CLICKHOUSE_DATABASE: str = "default"
     CLICKHOUSE_SECURE: bool = True
 
+    GOOGLE_CLOUD_PROJECT: str = ""
+    GOOGLE_CLOUD_LOCATION: str = "us-central1"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GCS_BUCKET: str = "scenerights-demo-bucket"
+
     DEMO_ACCESS_TOKEN: str = "demo-secret-token"
     DEMO_PROJECT_ID: str = "project_001"
     API_BASE_URL: str = "http://localhost:8000"
@@ -35,4 +40,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

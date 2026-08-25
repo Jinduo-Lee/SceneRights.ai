@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel
+from typing import Optional, List
+from pydantic import BaseModel, Field
 from app.schemas.enums import (
     PolicyDocumentStatusEnum,
     PolicyRuleStatusEnum,
@@ -32,3 +32,20 @@ class PolicyRule(BaseModel):
     effective_date: Optional[datetime] = None
     created_at: datetime
 
+
+class ExtractedRuleItem(BaseModel):
+    category: str = Field(description="Policy type category, e.g., 'continuity' or 'visual_review'")
+    rule_text: str = Field(description="Normalized enforceable policy rule text")
+    source_quote: str = Field(description="Verbatim exact source quote substring from document text")
+    priority: PriorityEnum = Field(default=PriorityEnum.HIGH, description="Priority level: high, medium, low")
+
+
+class ExtractedRuleList(BaseModel):
+    rules: List[ExtractedRuleItem]
+
+
+class PolicyProcessResponse(BaseModel):
+    policy_id: str
+    status: PolicyDocumentStatusEnum
+    rules_extracted: int
+    rules: List[PolicyRule]

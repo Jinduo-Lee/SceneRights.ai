@@ -1,0 +1,9 @@
+# NORTHSTAR STUDIOS — SCENE 12 POLICY
+
+## Continuity
+1. Lead actor wears a silver necklace throughout Scene 12. (priority: high)
+2. Hero mug remains blue throughout Scene 12. (priority: high)
+
+## Visual Review
+3. Flag visible unapproved fictional logos. (priority: medium)
+
