@@ -1,6 +1,10 @@
 import {
   PolicyDocument,
   PolicyRule,
+  Clip,
+  Scene,
+  AnalysisRun,
+  Finding,
   ErrorEnvelope,
 } from "./types";
 
@@ -125,3 +129,118 @@ export async function seedProject(
   return res.json();
 }
 
+// Milestone 3 Video & Continuity API helpers
+
+export async function uploadClip(
+  file: File,
+  sceneId: string = "scene_12",
+  role: string = "comparison",
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Clip> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("scene_id", sceneId);
+  formData.append("role", role);
+
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/clips`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+  return res.json();
+}
+
+export async function getClips(
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Clip[]> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/clips`
+  );
+  return res.json();
+}
+
+export async function createScene(
+  sceneId: string = "scene_12",
+  name: string = "Scene 12",
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Scene> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/scenes`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scene_id: sceneId, name }),
+    }
+  );
+  return res.json();
+}
+
+export async function getScene(
+  sceneId: string = "scene_12",
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Scene> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/scenes/${sceneId}`
+  );
+  return res.json();
+}
+
+export async function setReferenceClip(
+  sceneId: string = "scene_12",
+  referenceClipId: string,
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Scene> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/scenes/${sceneId}/reference`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reference_clip_id: referenceClipId }),
+    }
+  );
+  return res.json();
+}
+
+export async function analyzeScene(
+  sceneId: string = "scene_12",
+  comparisonClipId: string = "take_b",
+  idempotencyKey?: string,
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<{ analysis_run_id: string; status: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (idempotencyKey) {
+    headers["Idempotency-Key"] = idempotencyKey;
+  }
+
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/scenes/${sceneId}/analyze`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ comparison_clip_id: comparisonClipId }),
+    }
+  );
+  return res.json();
+}
+
+export async function getAnalysisRun(
+  analysisRunId: string,
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<AnalysisRun> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/analysis/${analysisRunId}`
+  );
+  return res.json();
+}
+
+export async function getSceneFindings(
+  sceneId: string = "scene_12",
+  projectId: string = DEFAULT_PROJECT_ID
+): Promise<Finding[]> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/projects/${projectId}/scenes/${sceneId}/findings`
+  );
+  return res.json();
+}

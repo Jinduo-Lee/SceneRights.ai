@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""SceneRights AI Compliance Gate Script (Milestone 1D).
+"""SceneRights AI Compliance Gate Script (Milestone 1D / Milestone 3).
 
 Enforces repository compliance rules per SceneRights AI v6.2.2 Master Spec
-and Milestone 1D Compliance Baseline Specification.
+and Milestone 1D/3 Compliance Baseline Specification.
 """
 
 import ast
@@ -25,9 +25,12 @@ ALLOWED_PYTHON_DEPENDENCIES = {
     "google-adk",
     "google-cloud-storage",
     "opencv-python-headless",
+    "opencv-python",
     "pypdf",
     "python-docx",
     "python-multipart",
+    "imageio-ffmpeg",
+    "ffmpeg-python",
     "pytest",
     "pytest-asyncio",
     "httpx",
@@ -204,7 +207,6 @@ def check_executable_python_code(root_dir: Path) -> list[ComplianceViolation]:
             continue
 
         for py_file in target_dir.glob("**/*.py"):
-            # Exclude virtual environments, node_modules, or test files
             if ".venv" in py_file.parts or "node_modules" in py_file.parts or "tests" in py_file.parts or py_file.name.startswith("test_"):
                 continue
 
@@ -214,7 +216,6 @@ def check_executable_python_code(root_dir: Path) -> list[ComplianceViolation]:
             except Exception:
                 continue
 
-            # Check OpenCV prohibited APIs using regex on code lines (exclude comments)
             lines = content.splitlines()
             for line_no, line in enumerate(lines, 1):
                 clean_line = line.split("#")[0]  # ignore comments
@@ -228,7 +229,6 @@ def check_executable_python_code(root_dir: Path) -> list[ComplianceViolation]:
                             )
                         )
 
-            # AST parsing for prohibited imports
             try:
                 tree = ast.parse(content, filename=str(py_file))
                 for node in ast.walk(tree):
@@ -298,7 +298,6 @@ def check_executable_js_ts_code(root_dir: Path) -> list[ComplianceViolation]:
 def check_env_and_secrets(root_dir: Path) -> list[ComplianceViolation]:
     violations = []
 
-    # Verify .gitignore exists and protects .env
     gitignore_path = root_dir / ".gitignore"
     if gitignore_path.exists():
         gi_content = gitignore_path.read_text(encoding="utf-8")
@@ -311,7 +310,6 @@ def check_env_and_secrets(root_dir: Path) -> list[ComplianceViolation]:
                 )
             )
 
-    # Verify .env.example contains no real secret keys or actual credentials
     env_example_path = root_dir / ".env.example"
     if not env_example_path.exists():
         violations.append(
@@ -329,7 +327,6 @@ def check_env_and_secrets(root_dir: Path) -> list[ComplianceViolation]:
                 k, v = line_str.split("=", 1)
                 k_str = k.strip()
                 v_str = v.strip()
-                # Check for suspicious actual secrets
                 if len(v_str) > 20 and not v_str.startswith("http") and not v_str.startswith("gs://") and " " not in v_str:
                     violations.append(
                         ComplianceViolation(

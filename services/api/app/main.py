@@ -3,6 +3,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.seed import router as seed_router
 from app.api.policies import router as policies_router
+from app.api.clips import router as clips_router
+from app.api.scenes import router as scenes_router
+from app.api.analysis import router as analysis_router
 
 app = FastAPI(
     title="SceneRights AI API",
@@ -39,6 +42,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 app.include_router(seed_router)
 app.include_router(policies_router)
+app.include_router(clips_router)
+app.include_router(scenes_router)
+app.include_router(analysis_router)
 
 
 @app.get("/healthz")
